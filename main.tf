@@ -90,7 +90,7 @@ data "template_file" "user_data" {
     mc_root        = var.mc_root
     mc_bucket      = var.bucket_id
     mc_backup_freq = var.mc_backup_freq
-    mc_version     = var.mc_version
+    mc_download_url= var.mc_download_url
     java_mx_mem    = var.java_mx_mem
     java_ms_mem    = var.java_ms_mem
   }
@@ -98,7 +98,7 @@ data "template_file" "user_data" {
 
 // Security group for our instance - allows SSH and minecraft 
 module "ec2_security_group" {
-  source = "git@github.com:terraform-aws-modules/terraform-aws-security-group.git?ref=master"
+  source = "terraform-aws-modules/security-group/aws"
 
   name        = "${var.name}-ec2"
   description = "Allow SSH and TCP ${var.mc_port}"
@@ -125,7 +125,7 @@ module "ec2_security_group" {
 
 // EC2 instance for the server - tune instance_type to fit your performance and budget requirements
 module "ec2_minecraft" {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-ec2-instance.git?ref=master"
+  source = "terraform-aws-modules/ec2-instance/aws"
   name   = "${var.name}-public"
 
   # instance
@@ -144,3 +144,11 @@ module "ec2_minecraft" {
   tags = var.tags
 }
 
+data "aws_eip" "by_public_ip" {
+  public_ip = var.elastic_ip
+}
+
+resource "aws_eip_association" "this" {
+  instance_id   = module.ec2_minecraft.id[0]
+  allocation_id = data.aws_eip.by_public_ip.id
+}

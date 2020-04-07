@@ -7,42 +7,42 @@ set -e
 
 # Determine linux distro
 if [ -f /etc/os-release ]; then
-    # freedesktop.org and systemd
-    . /etc/os-release
-    OS=$NAME
-    VER=$VERSION_ID
-elif type lsb_release >/dev/null 2>&1; then
-    # linuxbase.org
-    OS=$(lsb_release -si)
-    VER=$(lsb_release -sr)
-elif [ -f /etc/lsb-release ]; then
-    # For some versions of Debian/Ubuntu without lsb_release command
-    . /etc/lsb-release
-    OS=$DISTRIB_ID
-    VER=$DISTRIB_RELEASE
-elif [ -f /etc/debian_version ]; then
-    # Older Debian/Ubuntu/etc.
-    OS=Debian
-    VER=$(cat /etc/debian_version)
-elif [ -f /etc/SuSe-release ]; then
-    # Older SuSE/etc.
-    ...
-elif [ -f /etc/redhat-release ]; then
-    # Older Red Hat, CentOS, etc.
-    ...
-else
-    # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-    OS=$(uname -s)
-    VER=$(uname -r)
-fi
+	    # freedesktop.org and systemd
+	        . /etc/os-release
+		    OS=$NAME
+		        VER=$VERSION_ID
+		elif type lsb_release >/dev/null 2>&1; then
+			    # linuxbase.org
+			        OS=$(lsb_release -si)
+				    VER=$(lsb_release -sr)
+			    elif [ -f /etc/lsb-release ]; then
+				        # For some versions of Debian/Ubuntu without lsb_release command
+					    . /etc/lsb-release
+					        OS=$DISTRIB_ID
+						    VER=$DISTRIB_RELEASE
+					    elif [ -f /etc/debian_version ]; then
+						        # Older Debian/Ubuntu/etc.
+							    OS=Debian
+							        VER=$(cat /etc/debian_version)
+							elif [ -f /etc/SuSe-release ]; then
+								    # Older SuSE/etc.
+								        ...
+								elif [ -f /etc/redhat-release ]; then
+									    # Older Red Hat, CentOS, etc.
+									        ...
+									else
+										    # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
+										        OS=$(uname -s)
+											    VER=$(uname -r)
+										    fi
 
-# Update OS and install start script
-ubuntu_linux_setup() {
-  export SSH_USER="ubuntu"
-  export DEBIAN_FRONTEND=noninteractive
-  /usr/bin/apt-get update
-  /usr/bin/apt-get -yq install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" default-jre wget awscli
-  /bin/cat <<"__UPG__" > /etc/apt/apt.conf.d/10periodic
+										    # Update OS and install start script
+										    ubuntu_linux_setup() {
+											      export SSH_USER="ubuntu"
+											        export DEBIAN_FRONTEND=noninteractive
+												  /usr/bin/apt-get update
+												    /usr/bin/apt-get -yq install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" default-jre wget awscli
+												      /bin/cat <<"__UPG__" > /etc/apt/apt.conf.d/10periodic
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Download-Upgradeable-Packages "1";
 APT::Periodic::AutocleanInterval "7";
@@ -50,7 +50,7 @@ APT::Periodic::Unattended-Upgrade "1";
 __UPG__
 
   # Init script for starting, stopping
-  cat <<INIT > /etc/init.d/minecraft
+    cat <<INIT > /etc/init.d/minecraft
 #!/bin/bash
 # Short-Description: Minecraft server
 
@@ -81,23 +81,23 @@ exit 0
 INIT
 
   # Start up on reboot
-  /bin/chmod +x /etc/init.d/minecraft
-  /usr/sbin/update-rc.d minecraft defaults
+    /bin/chmod +x /etc/init.d/minecraft
+      /usr/sbin/update-rc.d minecraft defaults
 
-}
+      }
 
-# Update OS and install start script
-amazon_linux_setup() {
-    export SSH_USER="ec2-user"
-    /usr/bin/yum install java-1.8.0 yum-cron wget awscli -y
-    /bin/sed -i -e 's/update_cmd = default/update_cmd = security/'\
-                -e 's/apply_updates = no/apply_updates = yes/'\
-                -e 's/emit_via = stdio/emit_via = email/' /etc/yum/yum-cron.conf
-    chkconfig yum-cron on
-    service yum-cron start
-    /usr/bin/yum upgrade -y
+      # Update OS and install start script
+      amazon_linux_setup() {
+	          export SSH_USER="ec2-user"
+		      /usr/bin/yum install java-1.8.0 yum-cron wget awscli -y
+		          /bin/sed -i -e 's/update_cmd = default/update_cmd = security/'\
+				                  -e 's/apply_updates = no/apply_updates = yes/'\
+						                  -e 's/emit_via = stdio/emit_via = email/' /etc/yum/yum-cron.conf
+			      chkconfig yum-cron on
+			          service yum-cron start
+				      /usr/bin/yum upgrade -y
 
-    cat <<SYSTEMD > /etc/systemd/system/minecraft.service
+				          cat <<SYSTEMD > /etc/systemd/system/minecraft.service
 [Unit]
 Description=Minecraft Server
 After=network.target
@@ -114,31 +114,31 @@ WantedBy=multi-user.target
 SYSTEMD
 
   # Start on boot
-  /usr/bin/systemctl enable minecraft
+    /usr/bin/systemctl enable minecraft
 
-}
+    }
 
-MINECRAFT_JAR="minecraft_server.${mc_version}.jar"
+    MINECRAFT_JAR="server.jar"
 
-case $OS in
-  Ubuntu*)
-    ubuntu_linux_setup
-    ;;
-  Amazon*)
-    amazon_linux_setup
-    ;;
-  *)
-    echo "$PROG: unsupported OS $OS"
-    exit 1
-esac
+    case $OS in
+	      Ubuntu*)
+		          ubuntu_linux_setup
+			      ;;
+			        Amazon*)
+					    amazon_linux_setup
+					        ;;
+						  *)
+							      echo "$PROG: unsupported OS $OS"
+							          exit 1
+						  esac
 
-# Create mc dir, sync S3 to it and download mc if not already there (from S3)
-/bin/mkdir -p ${mc_root}
-/usr/bin/aws s3 sync s3://${mc_bucket} ${mc_root}
-[[ -e "$MINECRAFT_JAR" ]] || /usr/bin/wget -O ${mc_root}/$MINECRAFT_JAR https://s3.amazonaws.com/Minecraft.Download/versions/${mc_version}/$MINECRAFT_JAR
+						  # Create mc dir, sync S3 to it and download mc if not already there (from S3)
+						  /bin/mkdir -p ${mc_root}
+						  /usr/bin/aws s3 sync s3://${mc_bucket} ${mc_root}
+						  [[ -e "$MINECRAFT_JAR" ]] || /usr/bin/wget -O ${mc_root}/$MINECRAFT_JAR ${mc_download_url}
 
-# Cron job to sync data to S3 every five mins
-/bin/cat <<CRON > /etc/cron.d/minecraft
+						  # Cron job to sync data to S3 every five mins
+						  /bin/cat <<CRON > /etc/cron.d/minecraft
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${mc_root}
 */${mc_backup_freq} * * * *  $SSH_USER  /usr/bin/aws s3 sync ${mc_root}  s3://${mc_bucket}
@@ -156,13 +156,13 @@ EULA
 
 # Start the server
 case $OS in
-  Ubuntu*)
-    /etc/init.d/minecraft start
-    ;;
-  Amazon*)
-    /usr/bin/systemctl start minecraft
-    ;;
-esac
+	  Ubuntu*)
+		      /etc/init.d/minecraft start
+		          ;;
+			    Amazon*)
+				        /usr/bin/systemctl start minecraft
+					    ;;
+			    esac
 
-exit 0
+			    exit 0
 
