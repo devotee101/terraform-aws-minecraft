@@ -89,7 +89,7 @@ INIT
 # Update OS and install start script
 amazon_linux_setup() {
     export SSH_USER="ec2-user"
-    /usr/bin/yum install java-1.8.0 yum-cron wget awscli -y
+    /usr/bin/yum install java-1.8.0 yum-cron wget awscli git -y
     /bin/sed -i -e 's/update_cmd = default/update_cmd = security/'\
                 -e 's/apply_updates = no/apply_updates = yes/'\
                 -e 's/emit_via = stdio/emit_via = email/' /etc/yum/yum-cron.conf
@@ -136,6 +136,7 @@ esac
 /bin/mkdir -p ${mc_root}
 /usr/bin/aws s3 sync s3://${mc_bucket} ${mc_root}
 if [ ! -e "${mc_root}/$SPIGOT_JAR" ]; then
+  git config --global --unset core.autocrlf
   /bin/mkdir -p /tmp/spigot
   cd /tmp/spigot
   /usr/bin/wget -qO BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
