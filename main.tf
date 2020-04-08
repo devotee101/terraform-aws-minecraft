@@ -90,7 +90,7 @@ data "template_file" "user_data" {
     mc_root        = var.mc_root
     mc_bucket      = var.bucket_id
     mc_backup_freq = var.mc_backup_freq
-    mc_download_url= var.mc_download_url
+    mc_version     = var.mc_version
     java_mx_mem    = var.java_mx_mem
     java_ms_mem    = var.java_ms_mem
   }

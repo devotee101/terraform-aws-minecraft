@@ -38,9 +38,9 @@ variable "mc_root" {
   default     = "/home/minecraft"
 }
 
-variable "mc_download_url" {
-  description = "Download URL for minecraft server"
-  default     = "https://launcher.mojang.com/v1/objects/bb2b6b1aefcd70dfd1892149ac3a215f6c636b07/server.jar"
+variable "mc_version" {
+  description = "Which version of minecraft to install"
+  default     = "1.15.2"
 }
 
 variable "mc_backup_freq" {
