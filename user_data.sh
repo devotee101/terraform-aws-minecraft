@@ -106,7 +106,7 @@ After=network.target
 Type=simple
 User=$SSH_USER
 WorkingDirectory=${mc_root}
-ExecStart=/usr/bin/java -Xmx${java_mx_mem} -Xms${java_ms_mem}  -XX:+UseConcMarkSweepGC -jar $SPIGOT_JAR nogui
+ExecStart=/usr/bin/java -Xmx${java_mx_mem} -Xms${java_ms_mem} -XX:+UseConcMarkSweepGC -jar $SPIGOT_JAR --noconsole
 Restart=on-abort
 
 [Install]
