@@ -79,3 +79,7 @@ variable "allowed_cidrs" {
 variable "elastic_ip" {
   description = "The elastic IP"
 }
+
+variable "spot_price" {
+  description = "Max bid price for spot instance"
+}

@@ -121,8 +121,8 @@ module "ec2_security_group" {
   "all-all"]
 }
 
-// EC2 instance for the server - tune instance_type to fit your performance and budget requirements
-resource "aws_instance" "ec2_minecraft" {
+// EC2 spot instance for the server
+resource "aws_spot_instance_request" "ec2_minecraft" {
   # instance
   key_name             = var.key_name
   ami                  = var.ami != "" ? var.ami : data.aws_ami.ubuntu.image_id
@@ -135,6 +135,11 @@ resource "aws_instance" "ec2_minecraft" {
   vpc_security_group_ids      = [module.ec2_security_group.this_security_group_id]
   associate_public_ip_address = var.associate_public_ip_address
 
+  # spot instance
+  spot_price           = var.spot_price
+  wait_for_fulfillment = true
+  spot_type            = "one-time"
+
   tags = {
     Name   = "${var.name}-public"
     tostop = "true"
@@ -146,7 +151,7 @@ data "aws_eip" "by_public_ip" {
 }
 
 resource "aws_eip_association" "this" {
-  instance_id   = aws_instance.ec2_minecraft.id
+  instance_id   = aws_spot_instance_request.ec2_minecraft.spot_instance_id
   allocation_id = data.aws_eip.by_public_ip.id
 }
 
