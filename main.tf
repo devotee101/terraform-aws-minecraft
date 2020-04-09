@@ -136,9 +136,8 @@ module "ec2_minecraft" {
   user_data            = data.template_file.user_data.rendered
 
   # network
-  subnet_id = var.subnet_id
-  vpc_security_group_ids = [
-  module.ec2_security_group.this_security_group_id]
+  subnet_id                   = var.subnet_id
+  vpc_security_group_ids      = [module.ec2_security_group.this_security_group_id]
   associate_public_ip_address = var.associate_public_ip_address
 
   tags = var.tags
@@ -151,4 +150,64 @@ data "aws_eip" "by_public_ip" {
 resource "aws_eip_association" "this" {
   instance_id   = module.ec2_minecraft.id[0]
   allocation_id = data.aws_eip.by_public_ip.id
+}
+
+module "ec2_stop_weekday" {
+  source                         = "diodonfrost/lambda-scheduler-stop-start/aws"
+  name                           = "ec2_stop_weekday"
+  cloudwatch_schedule_expression = "cron(0 21 ? * MON-FRI *)"
+  schedule_action                = "stop"
+  autoscaling_schedule           = "false"
+  spot_schedule                  = "terminate"
+  ec2_schedule                   = "true"
+  rds_schedule                   = "false"
+  resources_tag = {
+    key   = "tostop"
+    value = "true"
+  }
+}
+
+module "ec2_stop_weekend" {
+  source                         = "diodonfrost/lambda-scheduler-stop-start/aws"
+  name                           = "ec2_stop_weekend"
+  cloudwatch_schedule_expression = "cron(0 22 ? * SAT-SUN *)"
+  schedule_action                = "stop"
+  autoscaling_schedule           = "false"
+  spot_schedule                  = "terminate"
+  ec2_schedule                   = "true"
+  rds_schedule                   = "false"
+  resources_tag = {
+    key   = "tostop"
+    value = "true"
+  }
+}
+
+module "ec2_start_weekday" {
+  source                         = "diodonfrost/lambda-scheduler-stop-start/aws"
+  name                           = "ec2_start_weekday"
+  cloudwatch_schedule_expression = "cron(0 8 ? * MON-FRI *)"
+  schedule_action                = "stop"
+  autoscaling_schedule           = "false"
+  spot_schedule                  = "terminate"
+  ec2_schedule                   = "true"
+  rds_schedule                   = "false"
+  resources_tag = {
+    key   = "tostop"
+    value = "true"
+  }
+}
+
+module "ec2_start_weekend" {
+  source                         = "diodonfrost/lambda-scheduler-stop-start/aws"
+  name                           = "ec2_start_weekend"
+  cloudwatch_schedule_expression = "cron(0 9 ? * SAT-SUN *)"
+  schedule_action                = "stop"
+  autoscaling_schedule           = "false"
+  spot_schedule                  = "terminate"
+  ec2_schedule                   = "true"
+  rds_schedule                   = "false"
+  resources_tag = {
+    key   = "tostop"
+    value = "true"
+  }
 }
