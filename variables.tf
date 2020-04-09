@@ -22,11 +22,6 @@ variable "name" {
   default     = "mc"
 }
 
-variable "tags" {
-  description = "Any extra tags to assign to objects"
-  default     = {}
-}
-
 // Minecraft-specific defaults
 variable "mc_port" {
   description = "TCP port for minecraft"

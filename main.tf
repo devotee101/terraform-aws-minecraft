@@ -119,15 +119,10 @@ module "ec2_security_group" {
   ]
   egress_rules = [
   "all-all"]
-
-  tags = var.tags
 }
 
 // EC2 instance for the server - tune instance_type to fit your performance and budget requirements
-module "ec2_minecraft" {
-  source = "terraform-aws-modules/ec2-instance/aws"
-  name   = "${var.name}-public"
-
+resource "aws_instance" "ec2_minecraft" {
   # instance
   key_name             = var.key_name
   ami                  = var.ami != "" ? var.ami : data.aws_ami.ubuntu.image_id
@@ -140,7 +135,10 @@ module "ec2_minecraft" {
   vpc_security_group_ids      = [module.ec2_security_group.this_security_group_id]
   associate_public_ip_address = var.associate_public_ip_address
 
-  tags = var.tags
+  tags = {
+    Name   = "${var.name}-public"
+    tostop = "true"
+  }
 }
 
 data "aws_eip" "by_public_ip" {
@@ -148,7 +146,7 @@ data "aws_eip" "by_public_ip" {
 }
 
 resource "aws_eip_association" "this" {
-  instance_id   = module.ec2_minecraft.id[0]
+  instance_id   = aws_instance.ec2_minecraft.id
   allocation_id = data.aws_eip.by_public_ip.id
 }
 
